@@ -1,0 +1,7 @@
+.findall
+.Match
+.match
+sed
+echo
+cat
+grep
