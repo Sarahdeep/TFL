@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <regex>
 #include "main.hpp"
+#define URI 1
+
 int count_slash(std::string &expr, int index) {
     int ans = 0;
     while (index >= 0 && expr[index] == '\\') {
@@ -96,7 +98,6 @@ int filter() {
     getmid();
     std::string s;
     std::string repl;
-    int num = 0;
     std::ifstream f("middle.txt");
     std::regex rows(R"((['"])(.*)\1)");
     std::regex neg_num(R"(.*\(.*\).*\\g\{(-[1-9])\}.*)");
@@ -114,8 +115,18 @@ int filter() {
     std::regex py_tail(R"(\?P<)");
     std::regex reg;
     std::smatch match;
+    int num = 0;
+#if URI == 1
+    std::string uri;
+    std::ifstream uri_file("uris.txt");
+    std::vector<std::pair<std::string,std::string>> regular_exps;
+#elif
     std::unordered_set<std::string> regular_exps;
+#endif
     while (getline(f, s)) {
+#if  URI == 1
+        getline(uri_file, uri);
+#endif
         s = std::regex_replace(s, stopwords, "");
         s = std::regex_replace(s, neg, "[");
         s = std::regex_replace(s, lazy_q, "$1");
@@ -153,17 +164,32 @@ int filter() {
             continue;
         }
         if (std::regex_match(s, rows)) {
+#if URI == 1
+            regular_exps.emplace_back(uri, s.substr(1, s.size() - 2));
+#elif
             regular_exps.insert(s.substr(1, s.size() - 2));
+#endif
         } else {
+#if URI == 1
+            regular_exps.emplace_back(uri, s);
+#elif
             regular_exps.insert(s);
+#endif
         }
 
     }
 
-    std::cout << regular_exps.size();
     std::ofstream file("back_ref.txt");
+#if URI == 1
+    std::ofstream u("uris2.txt");
+    for (const auto& r: regular_exps) {
+        file << r.second << '\n';
+        u << r.first << '\n';
+    }
+#else
     for (const std::string &r: regular_exps) {
         file << r << '\n';
     }
+#endif
     return 0;
 }

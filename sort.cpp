@@ -4,6 +4,9 @@
 #include <unordered_set>
 #include <regex>
 #include "filter.hpp"
+#define URI 1
+
+
 int count_slash(const std::string &expr, int index) {
     int ans = 0;
     while (index >= 0 && expr[index] == '\\') {
@@ -179,16 +182,36 @@ int main() {
     std::ofstream class2("second_class.csv");
     std::ofstream class3("third_class.csv");
     std::ofstream class4("fourth_class.csv");
+#if URI == 1
+    std::ifstream pat("uris2.txt");
+    std::string str;
+    std::ofstream image("im.txt");
+#endif
     std::string s;
     while (getline(f, s)) {
+#if URI == 1
+        getline(pat, str);
+#endif
         if (is_4_class(s)) {
             class4 << s << std::endl;
+#if URI == 1
+            image<< str <<'\t' << 4 <<'\n';
+#endif
         } else if (is_3_class(s)) {
             class3 << s << std::endl;
+#if URI == 1
+            image<< str <<'\t' << 3 <<'\n';
+#endif
         } else if (is_2_class(s)) {
             class2 << s << std::endl;
+#if URI == 1
+            image<< str <<'\t' << 2 <<'\n';
+#endif
         } else {
             class1 << s << std::endl;
+#if URI == 1
+            image<< str <<'\t' << 1 <<'\n';
+#endif
         }
     }
     f.close();
@@ -196,8 +219,9 @@ int main() {
     class2.close();
     class3.close();
     class4.close();
-    //std::cout<<s.substr(m["ch"].first, m["ch"].second-m["ch"].first+1);
-
-
+#if URI == 1
+    pat.close();
+    image.close();
+#endif
     return 0;
 }
