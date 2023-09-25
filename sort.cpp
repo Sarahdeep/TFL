@@ -109,6 +109,44 @@ bool check_iter(const std::string &expr) {
     return false;
 }
 
+bool classification_error(std::string &expr){
+    auto unnamed_coords = find_brackets_unnamed(expr);
+    auto named_coords = find_brackets_named(expr);
+    auto unnamed_refs = find_all_backrefs_unnamed(expr);
+    auto named_refs = find_all_backrefs_named(expr);
+    std::regex reg1(R"((\\|\\\\)[1-9])");
+    std::regex reg2(R"(\\g\{.*\})");
+    std::sregex_token_iterator end;
+    for (const auto &ref: named_refs) {
+        if (named_coords.count(ref.first)) {
+            auto brackets = named_coords[ref.first];
+            std::string check = expr.substr(brackets.first, brackets.second - brackets.first + 1);
+            std::sregex_token_iterator it(check.begin(), check.end(), reg2, 0);
+            while (it != end) {
+                if(it->str() == R"(\\g{)"+ref.first+"}"){
+                    return true;
+                }
+                it++;
+            }
+        }
+    }
+    for (const auto &ref: unnamed_refs) {
+        if (unnamed_coords.size() > ref.first-1) {
+            auto brackets = unnamed_coords[ref.first-1];
+            std::string check = expr.substr(brackets.first, brackets.second - brackets.first + 1);
+            std::sregex_token_iterator it(check.begin(), check.end(), reg1, 0);
+            while (it != end) {
+                if(it->str().back() == ref.first+'0'){
+                    return true;
+                }
+                it++;
+            }
+        }
+    }
+    return false;
+}
+
+
 bool is_4_class(std::string &expr) {
     auto unnamed_coords = find_brackets_unnamed(expr);
     auto named_coords = find_brackets_named(expr);
@@ -182,6 +220,7 @@ int main() {
     std::ofstream class2("second_class.csv");
     std::ofstream class3("third_class.csv");
     std::ofstream class4("fourth_class.csv");
+    std::ofstream class5("classification_error.csv");
 #if URI == 1
     std::ifstream pat("uris2.txt");
     std::string str;
@@ -192,7 +231,13 @@ int main() {
 #if URI == 1
         getline(pat, str);
 #endif
-        if (is_4_class(s)) {
+        if(classification_error(s)){
+            class5 << s << std::endl;
+#if URI == 1
+            image<< str <<'\t' << 5 <<'\n';
+#endif
+        }
+        else if (is_4_class(s)) {
             class4 << s << std::endl;
 #if URI == 1
             image<< str <<'\t' << 4 <<'\n';

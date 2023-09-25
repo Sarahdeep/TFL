@@ -114,6 +114,20 @@ int filter() {
     std::regex py_dirty_hack(R"((.*)\(\?<(.*)>(.*)\)(.*)\(\?P=\2\)(.*))");
     std::regex py_tail(R"(\?P<)");
     std::regex reg;
+    std::regex upper(R"([:upper:])");
+    std::regex lower(R"([:lower:])");
+    std::regex alpha(R"([:lower:])");
+    std::regex digit(R"([:digit:])");
+    std::regex xdigit(R"([:xdigit:])");
+    std::regex alnum(R"([:alnum:])");
+    std::regex word(R"([:word:])");
+    std::regex punct(R"([:punct:])");
+    std::regex blank(R"([:blank:])");
+    std::regex space(R"([:space:])");
+    std::regex cntrl(R"([:cntrl:])");
+    std::regex graph(R"([:graph:])");
+    std::regex print(R"([:print:])");
+
     std::smatch match;
     int num = 0;
 #if URI == 1
@@ -152,6 +166,19 @@ int filter() {
         s = std::regex_replace(s, py_dirty_hack, "$1(?<$2>$3)$4\\\\g{$2}$5");
         s = std::regex_replace(s, py_dirty_hack, "$1(?<$2>$3)$4\\\\g{$2}$5");
         s = std::regex_replace(s, py_tail, "?<");
+        s = std::regex_replace(s, upper, R"([A-Z])");
+        s = std::regex_replace(s, lower, R"([a-z])");
+        s = std::regex_replace(s, alpha, R"([[A-Z][a-z]])");
+        s = std::regex_replace(s, digit, R"([0-9])");
+        s = std::regex_replace(s, xdigit, R"([[0-9]A-Fa-f])");
+        s = std::regex_replace(s, alnum, R"([[[A-Z][a-z]][0-9]])");
+        s = std::regex_replace(s, word, R"(\w)");
+        s = std::regex_replace(s, punct, R"([-!"#$%&'()*+,./:;<=>?@[\\\]_`{|}~])");
+        s = std::regex_replace(s, blank, R"([ \t])");
+        s = std::regex_replace(s, space, R"(\s)");
+        s = std::regex_replace(s, cntrl, R"([\x00-\x1F\x7F])");
+        s = std::regex_replace(s, graph, R"([\x21-\x7E])");
+        s = std::regex_replace(s, print, R"([\x20-\x7E])");
         check_balance(s);
         delete_brackets(s);
         if(std::regex_match(s,match, neg_num)){
