@@ -1,0 +1,5 @@
+S -> T M
+M -> +T M|e
+T -> F G
+G -> *F G|e
+F -> i|(E)
